@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Cyclone;
+using RigidBody = UnityEngine.Rigidbody;
 
 public enum ShotType
 {
@@ -20,40 +21,40 @@ public class AmmoRound
 
     public void setMass(float mass)
     {
-        particle.body.mass = mass;
+        particle.Body.mass = mass;
     }
     public void setVelocity(Vector3 velocity)
     {
-        particle.body.velocity = velocity;
+        particle.Body.velocity = velocity;
     }
 
     public void setAcceleration(Vector3 acceleration)
     {
-        particle.acceleration = acceleration;
+        particle.Acceleration = acceleration;
     }
     public void setDamping(float damping)
     {
-        particle.damping = damping;
+        particle.Damping = damping;
     }
 
     public void setPosition(Vector3 position)
     {
-        particle.body.position = position;
+        particle.Body.position = position;
     }
 
     public Vector3 getAcceleration()
     {
-        return particle.acceleration;
+        return particle.Acceleration;
     }
 
     public void clearAccumulator()
     {
-        particle.forceAccum.Set(0f, 0f, 0f);
+        particle.ForceAccum.Set(0f, 0f, 0f);
     }
 
     void addForce(Vector3 force)
     {
-        particle.forceAccum += force;
+        particle.ForceAccum += force;
     }
 
 }
@@ -68,7 +69,7 @@ class Projectile : MonoBehaviour, IPointerUpHandler
 
     private bool bTargetReady;
 
-    private Rigidbody rigid;
+    private RigidBody rigid;
     private Vector3 initialPosition;
     private Quaternion initialRotation;
     private float duration;
@@ -166,9 +167,9 @@ class Projectile : MonoBehaviour, IPointerUpHandler
                 shot.particle.integrate(duration);
 
                 // Check if the particle is now invalid
-                if (shot.particle.body.position.y < 0.0f ||
+                if (shot.particle.Body.position.y < 0.0f ||
                     shot.startTime + 5000 < lastFrameTimestamp ||
-                      shot.particle.body.position.z > 200.0f)
+                      shot.particle.Body.position.z > 200.0f)
                 {
                     // We simply set the shot type to be unused, so the
                     // memory it occupies can be reused by another shot.
@@ -215,28 +216,28 @@ class Projectile : MonoBehaviour, IPointerUpHandler
             {
                 shot.particle = new CycloneParticle
                 {
-                    body = pistol.GetComponent<Rigidbody>()
+                    Body = pistol.GetComponent<RigidBody>()
                 };
             }
             else if (currentShotType == ShotType.ARTILLERY)
             {
                 shot.particle = new CycloneParticle
                 {
-                    body = artillery.GetComponent<Rigidbody>()
+                    Body = artillery.GetComponent<RigidBody>()
                 };
             }
             else if (currentShotType == ShotType.FIREBALL)
             {
                 shot.particle = new CycloneParticle
                 {
-                    body = fireball.GetComponent<Rigidbody>()
+                    Body = fireball.GetComponent<RigidBody>()
                 };
             }
             else if (currentShotType == ShotType.LASER)
             {
                 shot.particle = new CycloneParticle
                 {
-                    body = laser.GetComponent<Rigidbody>()
+                    Body = laser.GetComponent<RigidBody>()
                 };
             }
             ammo.Add(shot);

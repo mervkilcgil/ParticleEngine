@@ -1,26 +1,34 @@
-class FireworksDemo : MonoBehaviour
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+class FireworksDemo : MonoBehaviour, IPointerUpHandler
 {
-    static unsigned maxFireworks = 1024;
-    Firework fireworks = new Firework[maxFireworks];
-    unsigned nextFirework;
-    static unsigned ruleCount = 9;
-    FireworkRule rules = new FireworkRule[ruleCount];
+    static uint maxFireworks = 1024;
+    Firework[] fireworks = new Firework[maxFireworks];
+    uint nextFirework;
+    static uint ruleCount = 9;
+    FireworkRule[] rules = new FireworkRule[ruleCount];
+
+    public GameObject fireworkPrefab;
+
+    private bool isStarted;
 
     /** Dispatches a firework from the origin. */
-    public void create(unsigned type, Firework parent = null)
+    public void create(uint type, Firework parent = null)
     {
         // Get the rule needed to create this firework
-        FireworkRule rule = rules + (type - 1);
+        FireworkRule rule = rules[type - 1];
 
-        // Create the firework
-        rule.create(fireworks + nextFirework, parent);
+    // Create the firework
+        rule.create(fireworks[nextFirework], parent);
 
         // Increment the index for the next firework
         nextFirework = (nextFirework + 1) % maxFireworks;
     }
-    public void create(unsigned type, unsigned number, Firework parent)
+    public void create(uint type, uint number, Firework parent)
     {
-        for (unsigned i = 0; i < number; i++)
+        init();
+        for (uint i = 0; i < number; i++)
         {
             create(type, parent);
         }
@@ -118,14 +126,24 @@ class FireworksDemo : MonoBehaviour
     }
 
 
-    public void Start()
+    public void init()
     {
+        isStarted = true;
         nextFirework = 0;
-        for (Firework firework = fireworks;
-             firework < fireworks + maxFireworks;
-             firework++)
+        for(int i = 0; i < fireworks.Length; i++)
         {
-            firework.type = 0;
+            if (fireworks[i] == null)
+            {
+                GameObject firework = Instantiate(fireworkPrefab);
+                fireworks[i] = firework.GetComponent<Firework>();
+            }
+            fireworks[i].type = 0;
+        }
+        
+        for(int i = 0; i < rules.Length; i++)
+        {
+            if (rules[i] == null) 
+                rules[i] = new FireworkRule();
         }
 
         // Create the firework types
@@ -134,51 +152,80 @@ class FireworksDemo : MonoBehaviour
 
     public void Update()
     {
-        for (Firework firework = fireworks;
-             firework < fireworks + maxFireworks;
-             firework++)
+        if (Input.anyKeyDown)
         {
-            // Check if we need to process this firework.
-            if (firework.type > 0)
+            if (Input.GetKeyDown(KeyCode.A))
             {
-                // Does it need removing?
-                if (firework.update(duration))
+                create(1, 1, null); 
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                create(2, 1, null);
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                create(3, 1, null);
+            }
+            else if (Input.GetKeyDown(KeyCode.F))
+            {
+                create(4, 1, null);
+            }
+            else if (Input.GetKeyDown(KeyCode.G))
+            {
+                create(5, 1, null);
+            }
+            else if (Input.GetKeyDown(KeyCode.Z))
+            {
+                create(6, 1, null); 
+            }
+            else if (Input.GetKeyDown(KeyCode.X))
+            {
+                create(7, 1, null);
+            }
+            else if (Input.GetKeyDown(KeyCode.C))
+            {
+                create(8, 1, null);
+            }
+            else if (Input.GetKeyDown(KeyCode.V))
+            {
+                create(9, 1, null);
+            }
+        }
+
+        if (isStarted)
+        {
+
+            foreach (var firework in fireworks)
+            {
+                // Check if we need to process this firework.
+                if (firework.type > 0)
                 {
-                    // Find the appropriate rule
-                    FireworkRule rule = rules + (firework.type - 1);
-
-                    // Delete the current firework (this doesn't affect its
-                    // position and velocity for passing to the create function,
-                    // just whether or not it is processed for rendering or
-                    // physics.
-                    firework.type = 0;
-
-                    // Add the payload
-                    for (unsigned i = 0; i < rule.payloadCount; i++)
+                    // Does it need removing?
+                    if (firework.update(Time.deltaTime))
                     {
-                        Payload payload = rule.payloads + i;
-                        create(payload.type, payload.count, firework);
+                        // Find the appropriate rule
+                        FireworkRule rule = rules[firework.type - 1];
+
+                        // Delete the current firework (this doesn't affect its
+                        // position and velocity for passing to the create function,
+                        // just whether or not it is processed for rendering or
+                        // physics.
+                        firework.type = 0;
+
+                        // Add the payload
+                        for (uint i = 0; i < rule.payloadCount; i++)
+                        {
+                            FireworkRule.Payload payload = rule.payloads[i];
+                            create(payload.type, payload.count, firework);
+                        }
                     }
                 }
             }
         }
     }
 
-
-    void key(unsigned char key)
+    public void OnPointerUp(PointerEventData eventData)
     {
-        switch (key)
-        {
-            case '1': create(1, 1, NULL); break;
-            case '2': create(2, 1, NULL); break;
-            case '3': create(3, 1, NULL); break;
-            case '4': create(4, 1, NULL); break;
-            case '5': create(5, 1, NULL); break;
-            case '6': create(6, 1, NULL); break;
-            case '7': create(7, 1, NULL); break;
-            case '8': create(8, 1, NULL); break;
-            case '9': create(9, 1, NULL); break;
-        }
+        throw new System.NotImplementedException();
     }
-
 };
