@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Cyclone;
 
 public enum ShotType
 {
@@ -9,48 +11,6 @@ public enum ShotType
     ARTILLERY,
     FIREBALL,
     LASER
-}
-
-public class CycloneParticle
-{
-    public Rigidbody body;
-    public Vector3 acceleration;
-    public float damping;
-    public Vector3 forceAccum;
-
-    public float inverseMass;
-
-    public void integrate(float duration)
-    {
-        // We don't integrate things with zero mass.
-        if (inverseMass <= 0.0f) return;
-
-        //assert(duration > 0.0);
-
-        // Update linear position.
-
-        addScaledVector(body.position, body.velocity, 1.0f/* duration */);
-
-        // Work out the acceleration from the force
-        Vector3 resultingAcc = acceleration;
-        addScaledVector(resultingAcc, forceAccum, inverseMass);
-
-        // Update linear velocity from the acceleration.
-        addScaledVector(body.velocity, resultingAcc, duration);
-
-        // Impose drag.
-        body.velocity *= Mathf.Pow(damping, duration);
-
-        // Clear the forces.
-        forceAccum.Set(0f, 0f, 0f);
-    }
-
-    private void addScaledVector(Vector3 destVector, Vector3 addingVec, float scale)
-    {
-        destVector.x += addingVec.x * scale;
-        destVector.y += addingVec.y * scale;
-        destVector.z += addingVec.z * scale;
-    }
 }
 public class AmmoRound
 {
@@ -115,7 +75,7 @@ class Projectile : MonoBehaviour, IPointerUpHandler
 
     public readonly static uint ammoRounds = 2;
 
-    AmmoRound[] ammo = new AmmoRound[ammoRounds];
+    private List<AmmoRound> ammo = new List<AmmoRound>();
 
     ShotType currentShotType;
 
@@ -125,6 +85,8 @@ class Projectile : MonoBehaviour, IPointerUpHandler
     {
         duration = 0;
         lastFrameTimestamp = 0;
+        currentShotType = ShotType.UNUSED;
+        SetShot();
     }
 
 
@@ -134,6 +96,7 @@ class Projectile : MonoBehaviour, IPointerUpHandler
     }
     public void fire()
     {
+        SetShot();
         // Find the first available round.
         AmmoRound tempShot = null;
         foreach (var shot in ammo)
@@ -143,7 +106,7 @@ class Projectile : MonoBehaviour, IPointerUpHandler
         }
 
         // If we didn't find a round, then exit - we can't fire.
-        if (tempShot == ammo[ammo.Length - 1]) return;
+        if (tempShot == ammo[ammo.Count - 1]) return;
 
         // Set the properties of the particle
         switch (currentShotType)
@@ -197,7 +160,7 @@ class Projectile : MonoBehaviour, IPointerUpHandler
         // Update the physics of each particle in turn
         foreach (var shot in ammo)
         {
-            if (shot.type != ShotType.UNUSED)
+            if (shot != null && shot.type != ShotType.UNUSED)
             {
                 // Run the physics
                 shot.particle.integrate(duration);
@@ -213,21 +176,28 @@ class Projectile : MonoBehaviour, IPointerUpHandler
                 }
             }
         }
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+
+        if (Input.anyKeyDown)
         {
-            currentShotType = ShotType.PISTOL;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
-        {
-            currentShotType = ShotType.ARTILLERY;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha3))
-        {
-            currentShotType = ShotType.FIREBALL;
-        }
-        else if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            currentShotType = ShotType.LASER;
+
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                currentShotType = ShotType.PISTOL;
+            }
+            else if (Input.GetKeyDown(KeyCode.S))
+            {
+                currentShotType = ShotType.ARTILLERY;
+            }
+            else if (Input.GetKeyDown(KeyCode.D))
+            {
+                currentShotType = ShotType.FIREBALL;
+            }
+            else if (Input.GetKeyDown(KeyCode.F))
+            {
+                currentShotType = ShotType.LASER;
+            }
+            else
+                fire();
         }
 
         SetShot();
@@ -235,9 +205,41 @@ class Projectile : MonoBehaviour, IPointerUpHandler
 
     public void SetShot()
     {
-        foreach (var shot in ammo)
+        ammo.Clear();
+        for (int i = 0; i < ammoRounds; i++)
         {
+            AmmoRound shot = new AmmoRound();
             shot.type = currentShotType;
+
+            if (currentShotType == ShotType.PISTOL)
+            {
+                shot.particle = new CycloneParticle
+                {
+                    body = pistol.GetComponent<Rigidbody>()
+                };
+            }
+            else if (currentShotType == ShotType.ARTILLERY)
+            {
+                shot.particle = new CycloneParticle
+                {
+                    body = artillery.GetComponent<Rigidbody>()
+                };
+            }
+            else if (currentShotType == ShotType.FIREBALL)
+            {
+                shot.particle = new CycloneParticle
+                {
+                    body = fireball.GetComponent<Rigidbody>()
+                };
+            }
+            else if (currentShotType == ShotType.LASER)
+            {
+                shot.particle = new CycloneParticle
+                {
+                    body = laser.GetComponent<Rigidbody>()
+                };
+            }
+            ammo.Add(shot);
         }
     }
 
