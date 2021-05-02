@@ -218,6 +218,7 @@ class FireworksDemo : MonoBehaviour, IPointerUpHandler
                             FireworkRule.Payload payload = rule.payloads[i];
                             create(payload.type, payload.count, firework);
                         }
+                        DestroyImmediate(firework.gameObject);
                     }
                 }
             }

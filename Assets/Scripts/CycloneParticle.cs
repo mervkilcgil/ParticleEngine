@@ -107,10 +107,5 @@ namespace Cyclone
         {
             if(mass != 0) inverseMass = ((float)1.0)/mass;
         }
-
-        public void Update()
-        {
-            transform.position += velocity * Time.deltaTime;
-        }
     }
 }

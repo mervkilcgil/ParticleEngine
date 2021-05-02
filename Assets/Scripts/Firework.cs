@@ -15,6 +15,12 @@ public class Firework : CycloneParticle
         age -= duration;
         return (age < 0) || (this.transform.position.y < 0);
     }
+
+    public void Update()
+    {
+        if (age > 0)
+            transform.position += velocity * Time.deltaTime;
+    }
 };
 
 public class FireworkRule 
