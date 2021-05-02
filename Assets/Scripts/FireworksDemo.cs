@@ -19,7 +19,7 @@ class FireworksDemo : MonoBehaviour, IPointerUpHandler
         // Get the rule needed to create this firework
         FireworkRule rule = rules[type - 1];
 
-    // Create the firework
+        // Create the firework
         rule.create(fireworks[nextFirework], parent);
 
         // Increment the index for the next firework
@@ -27,7 +27,7 @@ class FireworksDemo : MonoBehaviour, IPointerUpHandler
     }
     public void create(uint type, uint number, Firework parent)
     {
-        init();
+        init(number);
         for (uint i = 0; i < number; i++)
         {
             create(type, parent);
@@ -126,11 +126,11 @@ class FireworksDemo : MonoBehaviour, IPointerUpHandler
     }
 
 
-    public void init()
+    public void init(uint number)
     {
         isStarted = true;
         nextFirework = 0;
-        for(int i = 0; i < fireworks.Length; i++)
+        for(int i = 0; i < number; i++)
         {
             if (fireworks[i] == null)
             {
@@ -156,39 +156,39 @@ class FireworksDemo : MonoBehaviour, IPointerUpHandler
         {
             if (Input.GetKeyDown(KeyCode.A))
             {
-                create(1, 1, null); 
+                create(1, 100, null); 
             }
             else if (Input.GetKeyDown(KeyCode.S))
             {
-                create(2, 1, null);
+                create(2, 100, null);
             }
             else if (Input.GetKeyDown(KeyCode.D))
             {
-                create(3, 1, null);
+                create(3, 100, null);
             }
             else if (Input.GetKeyDown(KeyCode.F))
             {
-                create(4, 1, null);
+                create(4, 100, null);
             }
             else if (Input.GetKeyDown(KeyCode.G))
             {
-                create(5, 1, null);
+                create(5, 100, null);
             }
             else if (Input.GetKeyDown(KeyCode.Z))
             {
-                create(6, 1, null); 
+                create(6, 100, null); 
             }
             else if (Input.GetKeyDown(KeyCode.X))
             {
-                create(7, 1, null);
+                create(7, 100, null);
             }
             else if (Input.GetKeyDown(KeyCode.C))
             {
-                create(8, 1, null);
+                create(8, 100, null);
             }
             else if (Input.GetKeyDown(KeyCode.V))
             {
-                create(9, 1, null);
+                create(9, 100, null);
             }
         }
 
@@ -198,7 +198,7 @@ class FireworksDemo : MonoBehaviour, IPointerUpHandler
             foreach (var firework in fireworks)
             {
                 // Check if we need to process this firework.
-                if (firework.type > 0)
+                if (firework != null && firework.type > 0)
                 {
                     // Does it need removing?
                     if (firework.update(Time.deltaTime))

@@ -79,7 +79,7 @@ public class FireworkRule
     public void create(Firework firework, Firework parent = null)
     {
         firework.type = type;
-        firework.age = Random.Range(minAge, maxAge + 1);
+        firework.age = Random.Range(minAge, maxAge);
 
         Vector3 vel = Vector3.zero;
         if (parent != null) 
@@ -90,7 +90,7 @@ public class FireworkRule
         else
         {
             Vector3 start = Vector3.zero;
-            int x = (int)randomInt(3) - 1;
+            int x = UnityEngine.Random.Range(0,3) - 1;
             start.x = 5.0f * x;
             firework.setPosition(start);
         }
@@ -115,35 +115,35 @@ public class FireworkRule
         return randomBits()  % max;
     }
     
-    private int rotl(int n, int r)
+    private uint rotl(int n, int r)
     {
-        return	(n << r) |
-                (n >> (32 - r));
+        int res = (n << r) | (n >> (32 - r));
+        return	Convert.ToUInt32(res);
     }
 
-    private int rotr(int n, int r)
+    private uint rotr(int n, int r)
     {
-        return	(n >> r) |
-                (n << (32 - r));
+        int res = (n >> r) | (n << (32 - r));
+        return	Convert.ToUInt32(res);
     }
     
-    int randomBits()
+    uint randomBits()
     {
         int p1, p2;
-        float s = Time.time;
+        uint s = (uint)Time.time;
         p1 = 0;  p2 = 10;
-        int[] buffer = new int[17];
+        uint[] buffer = new uint[17];
 
         // Fill the buffer with some basic random numbers
         for (uint i = 0; i < 17; i++)
         {
             // Simple linear congruential generator
-            s = s * 2891336453 + 1;
-            buffer[i] = (int)s;
+            s = (uint)(s * 2891336453 + 1);
+            buffer[i] = s;
         }
         
         // Rotate the buffer and store it back to itself
-        buffer[p1] = rotl(buffer[p2], 13) + rotl((int)buffer[p1], 9);
+        buffer[p1] = rotl((int)buffer[p2], 13) + rotl((int)buffer[p1], 9);
 
         // Return result
         return buffer[p1];
@@ -151,32 +151,31 @@ public class FireworkRule
     
     private Vector3 randomVector(Vector3 min, Vector3 max)
     {
-        return new Vector3(
-            randomReal(min.x, max.x),
-            randomReal(min.y, max.y),
-            randomReal(min.z, max.z)
+        return new Vector3(Random.Range(min.x, max.x),
+            Random.Range(min.y, max.y),
+            Random.Range(min.z, max.z)
         );
     }
     
-    private float randomBinomial(float scale)
+    private uint randomBinomial(uint scale)
     {
         return (randomReal()-randomReal())*scale;
     }
     
-    private float randomReal()
+    private uint randomReal()
     {
         // Get the random number
-        int bits = randomBits();
+        uint bits = randomBits();
 
         // Set up a reinterpret structure for manipulation
         
-        float value = BitConverter.ToSingle(BitConverter.GetBytes((bits >> 9) | 0x3f800000), 0);
+        uint value = (uint)BitConverter.ToSingle(BitConverter.GetBytes((bits >> 9) | 0x3f800000), 0);
 
         // And return the value
-        return value - 1.0f;
+        return (uint)(value - 1.0);
     }
     
-    private float randomReal(float min, float max)
+    private uint randomReal(uint min, uint max)
     {
         return randomReal() * (max-min) + min;
     }
